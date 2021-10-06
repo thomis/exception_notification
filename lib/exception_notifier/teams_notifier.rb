@@ -38,7 +38,7 @@ module ExceptionNotifier
         @controller = @request_items = nil
       else
         @controller = @env['action_controller.instance'] || MissingController.new
-
+        @additional_exception_data = @env["exception_notifier.exception_data"]
         request = ActionDispatch::Request.new(@env)
 
         @request_items = { url: request.original_url,
@@ -47,10 +47,6 @@ module ExceptionNotifier
                            parameters: request.filtered_parameters,
                            timestamp: Time.current }
 
-        if request.session['warden.user.user.key']
-          current_user = User.find(request.session['warden.user.user.key'][0][0])
-          @request_items[:current_user] = { id: current_user.id, email: current_user.email }
-        end
       end
 
       payload = message_text
@@ -96,7 +92,7 @@ module ExceptionNotifier
 
       details['facts'].push message_request unless @request_items.nil?
       details['facts'].push message_backtrace unless @backtrace.nil?
-
+      details['facts'].push additional_exception_data unless @additional_exception_data.nil?
       details
     end
 
@@ -124,6 +120,13 @@ module ExceptionNotifier
       {
         'name' => 'Backtrace',
         'value' => text.join("  \n").to_s
+      }
+    end
+
+    def additional_exception_data
+      {
+        'name' => 'Data',
+        'value' => "`#{@additional_exception_data}`\n  "
       }
     end
 
