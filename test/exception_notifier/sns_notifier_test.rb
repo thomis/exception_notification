@@ -122,7 +122,7 @@ class SnsNotifierTest < ActiveSupport::TestCase
                         'REQUEST_METHOD' => 'GET',
                         'REQUEST_URI' => '/examples',
                         'action_controller.instance' => controller,
-                        'exception_notifier.exception_data' => {current_user: 12}
+                        'exception_notifier.exception_data' => { current_user: 12 }
                       })
   end
   test 'should put optional data into text' do
@@ -146,12 +146,11 @@ class SnsNotifierTest < ActiveSupport::TestCase
                       env: {
                         'REQUEST_METHOD' => 'GET',
                         'REQUEST_URI' => '/examples',
-                        'action_controller.instance' => controller,
+                        'action_controller.instance' => controller
                       },
                       data: {
                         current_user: 12
-                      }
-                     )
+                      })
   end
 
   private

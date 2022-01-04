@@ -111,7 +111,6 @@ module ExceptionNotifier
     def rails_app_name
       return unless defined?(::Rails) && ::Rails.respond_to?(:application)
 
-      
       if Rails::VERSION::MAJOR >= 6
         Rails.application.class.module_parent_name.underscore
       else
