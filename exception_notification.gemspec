@@ -38,5 +38,4 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'sidekiq', '>= 5.0.4'
   s.add_development_dependency 'slack-notifier', '>= 1.0.0'
   s.add_development_dependency 'timecop', '~> 0.9.0'
-  s.add_development_dependency 'tinder', '~> 1.8'
 end
