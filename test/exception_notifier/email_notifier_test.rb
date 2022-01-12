@@ -239,6 +239,7 @@ class EmailNotifierWithEnvTest < ActiveSupport::TestCase
       'action_dispatch.parameter_filter' => ['secret'],
       'HTTPS' => 'on',
       'action_controller.instance' => @controller,
+      'rack.session.options' => {},
       params: { id: 'foo', secret: 'secret' }
     )
 
@@ -319,7 +320,8 @@ class EmailNotifierWithEnvTest < ActiveSupport::TestCase
           * rack.request.query_hash                   : {"id"=>"foo", "secret"=>"[FILTERED]"}
           * rack.request.query_string                 : id=foo&secret=secret
           * rack.run_once                             : false
-          * rack.session                              : {}
+          * rack.session                              : #{@test_env['rack.session']}
+          * rack.session.options                      : #{@test_env['rack.session.options']}
           * rack.url_scheme                           : http
           * rack.version                              : #{Rack::VERSION}
 
