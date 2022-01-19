@@ -17,8 +17,8 @@ There's a great [Railscast about Exception Notification](http://railscasts.com/e
 
 ## Requirements
 
-* Ruby 2.3 or greater
-* Rails 4.0 or greater, Sinatra or another Rack-based application.
+* Ruby 2.5 or greater
+* Rails 5.2 or greater, Sinatra or another Rack-based application.
 
 ## Getting Started
 
@@ -35,7 +35,6 @@ ExceptionNotification is used as a rack middleware, or in the environment you wa
 ```ruby
 Rails.application.config.middleware.use ExceptionNotification::Rack,
   email: {
-    deliver_with: :deliver, # Rails >= 4.2.1 do not need this option since it defaults to :deliver_now
     email_prefix: '[PREFIX] ',
     sender_address: %{"notifier" <notifier@example.com>},
     exception_recipients: %w{exceptions@example.com}
@@ -269,7 +268,6 @@ def server_error(exception)
   )
 end
 ```
-
 
 ## Extras
 

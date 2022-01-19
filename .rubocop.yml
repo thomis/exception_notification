@@ -5,6 +5,7 @@ AllCops:
   DisplayCopNames: true
   Exclude:
     - "gemfiles/**/*"
+    - vendor/bundle/**/*
 
 Style/Documentation:
   Enabled: false
