@@ -1,7 +1,7 @@
 # Exception Notification
 
 [![Gem Version](https://badge.fury.io/rb/exception_notification.svg)](https://badge.fury.io/rb/exception_notification)
-[![Build Status](https://travis-ci.org/smartinez87/exception_notification.svg?branch=master)](https://travis-ci.org/smartinez87/exception_notification)
+[![Build Status](https://github.com/smartinez87/exception_notification/actions/workflows/main.yml/badge.svg)](https://github.com/smartinez87/exception_notification/actions/workflows/main.yml)
 [![Coverage Status](https://coveralls.io/repos/github/smartinez87/exception_notification/badge.svg?branch=master)](https://coveralls.io/github/smartinez87/exception_notification?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/78a9a12be00a6d305136/maintainability)](https://codeclimate.com/github/smartinez87/exception_notification/maintainability)
 
