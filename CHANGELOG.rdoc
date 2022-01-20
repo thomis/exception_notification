@@ -9,6 +9,7 @@
 
 * removals
   * Dropped support for Tinder (gem is no longer maintained) (by @fwininger)
+  * Dropped support for Ruby on Rails versions below 5.2
 
 == 4.4.3
 
