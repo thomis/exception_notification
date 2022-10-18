@@ -1,7 +1,7 @@
 # Exception Notification
 
 [![Gem Version](https://badge.fury.io/rb/exception_notification.svg)](https://badge.fury.io/rb/exception_notification)
-[![Build Status](https://travis-ci.org/smartinez87/exception_notification.svg?branch=master)](https://travis-ci.org/smartinez87/exception_notification)
+[![Build Status](https://github.com/smartinez87/exception_notification/actions/workflows/main.yml/badge.svg)](https://github.com/smartinez87/exception_notification/actions/workflows/main.yml)
 [![Coverage Status](https://coveralls.io/repos/github/smartinez87/exception_notification/badge.svg?branch=master)](https://coveralls.io/github/smartinez87/exception_notification?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/78a9a12be00a6d305136/maintainability)](https://codeclimate.com/github/smartinez87/exception_notification/maintainability)
 
@@ -9,7 +9,7 @@
 
 ---
 
-The Exception Notification gem provides a set of [notifiers](#notifiers) for sending notifications when errors occur in a Rack/Rails application. The built-in notifiers can deliver notifications by [email](docs/notifiers/email.md), [Campfire](docs/notifiers/campfire.md), [HipChat](docs/notifiers/hipchat.md), [Slack](docs/notifiers/slack.md), [Mattermost](docs/notifiers/mattermost.md), [Teams](docs/notifiers/teams.md), [IRC](docs/notifiers/irc.md), [Amazon SNS](docs/notifiers/sns.md), [Google Chat](docs/notifiers/google_chat.md), [Datadog](docs/notifiers/datadog.md) or via custom [WebHooks](docs/notifiers/webhook.md).
+The Exception Notification gem provides a set of [notifiers](#notifiers) for sending notifications when errors occur in a Rack/Rails application. The built-in notifiers can deliver notifications by [email](docs/notifiers/email.md), [HipChat](docs/notifiers/hipchat.md), [Slack](docs/notifiers/slack.md), [Mattermost](docs/notifiers/mattermost.md), [Teams](docs/notifiers/teams.md), [IRC](docs/notifiers/irc.md), [Amazon SNS](docs/notifiers/sns.md), [Google Chat](docs/notifiers/google_chat.md), [Datadog](docs/notifiers/datadog.md) or via custom [WebHooks](docs/notifiers/webhook.md).
 
 There's a great [Railscast about Exception Notification](http://railscasts.com/episodes/104-exception-notifications-revised) you can see that may help you getting started.
 
@@ -17,8 +17,8 @@ There's a great [Railscast about Exception Notification](http://railscasts.com/e
 
 ## Requirements
 
-* Ruby 2.3 or greater
-* Rails 4.0 or greater, Sinatra or another Rack-based application.
+* Ruby 2.5 or greater
+* Rails 5.2 or greater, Sinatra or another Rack-based application.
 
 ## Getting Started
 
@@ -35,7 +35,6 @@ ExceptionNotification is used as a rack middleware, or in the environment you wa
 ```ruby
 Rails.application.config.middleware.use ExceptionNotification::Rack,
   email: {
-    deliver_with: :deliver, # Rails >= 4.2.1 do not need this option since it defaults to :deliver_now
     email_prefix: '[PREFIX] ',
     sender_address: %{"notifier" <notifier@example.com>},
     exception_recipients: %w{exceptions@example.com}
@@ -84,7 +83,6 @@ Options -> sections" below.
 
 ExceptionNotification relies on notifiers to deliver notifications when errors occur in your applications. By default, 8 notifiers are available:
 
-* [Campfire notifier](docs/notifiers/campfire.md)
 * [Datadog notifier](docs/notifiers/datadog.md)
 * [Email notifier](docs/notifiers/email.md)
 * [HipChat notifier](docs/notifiers/hipchat.md)
@@ -270,7 +268,6 @@ def server_error(exception)
   )
 end
 ```
-
 
 ## Extras
 
