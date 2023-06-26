@@ -30,7 +30,42 @@ gem 'exception_notification'
 
 ### Rails
 
-ExceptionNotification is used as a rack middleware, or in the environment you want it to run. In most cases you would want ExceptionNotification to run on production. Thus, you can make it work by putting the following lines in your `config/environments/production.rb`:
+In order to install ExceptionNotification as an [engine](https://api.rubyonrails.org/classes/Rails/Engine.html), just run the following command from the terminal:
+
+    rails g exception_notification:install
+
+This generates an initializer file, `config/initializers/exception_notification.rb` with some default configuration, which you should modify as needed.
+
+Make sure the gem is not listed solely under the `production` group in your `Gemfile`, since this initializer will be loaded regardless of environment. If you want it to only be enabled in production, you can add this to your configuration:
+
+```ruby
+  config.ignore_if do |exception, options|
+    not Rails.env.production?
+  end
+```
+
+The generated initializer file will include this require:
+```ruby
+require 'exception_notification/rails'
+```
+
+which automatically adds the ExceptionNotification middleware to the Rails middleware stack. This middleware is what watches for unhandled exceptions from your Rails app (except for [background jobs](#background-jobs)) and notifies you when they occur.
+
+The generated file adds an `email` notifier:
+
+```ruby
+  config.add_notifier :email, {
+    email_prefix: '[ERROR] ',
+    sender_address: %{"Notifier" <notifier@example.com>},
+    exception_recipients: %w{exceptions@example.com}
+  }
+```
+
+**Note**: In order to enable delivery notifications by email, make sure you have [ActionMailer configured](docs/notifiers/email.md#actionmailer-configuration).
+
+#### Adding middleware manually
+
+Alternatively, if for some reason you don't want to `require 'exception_notification/rails'`, you can manually add the middleware, like this:
 
 ```ruby
 Rails.application.config.middleware.use ExceptionNotification::Rack,
@@ -41,7 +76,10 @@ Rails.application.config.middleware.use ExceptionNotification::Rack,
   }
 ```
 
-**Note**: In order to enable delivery notifications by email make sure you have [ActionMailer configured](docs/notifiers/email.md#actionmailer-configuration).
+This is the older way of configuring ExceptionNotification (which prior to version 4 was the _only_ way to configure it), and is still the way used in some of the examples.
+
+Options passed to the `ExceptionNotification::Rack` middleware in this way are translated to the equivalent configuration options for the `ExceptionNotification.configure` of configuring (compare to the [Rails](#rails) example above).
+
 
 ### Rack/Sinatra
 
@@ -227,23 +265,51 @@ Rails' routing middleware uses this strategy, rather than raising an exception, 
 
 Set to false to trigger notifications when another rack middleware sets the "X-Cascade" header to "pass."
 
-## Background Notifications
+## Background Jobs
 
-If you want to send notifications from a background process like DelayedJob, you should use the `notify_exception` method like this:
+The ExceptionNotification middleware can only detect notifications that occur during web requests (controller actions). If you have any Ruby code that gets run _outside_ of a normal web request (hereafter referred to as a "background job" or "background process"), exceptions must be detected a different way (the middleware won't even be running in this context).
+
+Examples of background jobs include jobs triggered from a cron file or from a queue.
+
+ExceptionNotificatior can be configured to automatically notify of exceptions occurring in most common types of Rails background jobs such as [rake tasks](#rake-tasks). Additionally, it provides optional integrations for some 3rd-party libraries such as [Resque and Sidekiq](#resquesidekiq). And of course you can manually trigger a notification if no integration is provided.
+
+### Rails runner
+
+To enable exception notification for your runner commands, add this line to your `config/application.rb` _below_ the `Bundler.require` line (ensuring that `exception_notification` and `rails` gems will have already been required):
+
+```ruby
+require 'exception_notification/rails'
+```
+
+(Requiring it from an initializer is too late, because this depends on the `runner` callback, and that will have already been fired _before_ any initializers run.)
+
+### Rake tasks
+
+If you've already added `require 'exception_notification/rails'` to your `config/application.rb` as described [above](#rails-runner), then there's nothing further you need to do. (That Engine has a `rake_tasks` callback which automatically requires the file below.)
+
+Alternatively, you can add this line to your `config/initializers/exception_notification.rb`:
+
+```ruby
+require 'exception_notification/rake'
+```
+
+### Manually notify of exceptions
+
+If you want to manually send a notifications from a background process that is not _automatically_ handled by ExceptionNotification, then you need to manually call the `notify_exception` method like this:
 
 ```ruby
 begin
-  some code...
+  # some code...
 rescue => e
   ExceptionNotifier.notify_exception(e)
 end
 ```
 
-You can include information about the background process that created the error by including a data parameter:
+You can include information about the background process that created the error by including a `data` parameter:
 
 ```ruby
 begin
-  some code...
+  # some code...
 rescue => e
   ExceptionNotifier.notify_exception(
     e,
@@ -252,38 +318,9 @@ rescue => e
 end
 ```
 
-### Manually notify of exception
-
-If your controller action manually handles an error, the notifier will never be run. To manually notify of an error you can do something like the following:
-
-```ruby
-rescue_from Exception, with: :server_error
-
-def server_error(exception)
-  # Whatever code that handles the exception
-
-  ExceptionNotifier.notify_exception(
-    exception,
-    env: request.env, data: { message: 'was doing something wrong' }
-  )
-end
-```
-
-## Extras
-
-### Rails
-
-Since his first version, ExceptionNotification was just a simple rack middleware. But, the version 4.0.0 introduced the option to use it as a Rails engine. In order to use ExceptionNotification as an engine, just run the following command from the terminal:
-
-    rails g exception_notification:install
-
-This command generates an initialize file (`config/initializers/exception_notification.rb`) where you can customize your configurations.
-
-Make sure the gem is not listed solely under the `production` group, since this initializer will be loaded regardless of environment.
-
 ### Resque/Sidekiq
 
-Instead of manually calling background notifications foreach job/worker, you can configure ExceptionNotification to do this automatically. For this, run:
+Instead of manually calling background notifications for each job/worker, you can configure ExceptionNotification to do this automatically. For this, run:
 
     rails g exception_notification:install --resque
 
@@ -292,6 +329,25 @@ or
     rails g exception_notification:install --sidekiq
 
 As above, make sure the gem is not listed solely under the `production` group, since this initializer will be loaded regardless of environment.
+
+## Manually notify of exceptions from `rescue_from` handler
+
+If your controller rescues and handles an error, the middleware won't be able to see that there was an exception, and the notifier will never be run. To manually notify of an error after rescuing it, you can do something like the following:
+
+```ruby
+class SomeController < ApplicationController
+  rescue_from Exception, with: :server_error
+
+  def server_error(exception)
+    # Whatever code that handles the exception
+
+    ExceptionNotifier.notify_exception(
+      exception,
+      env: request.env, data: { message: 'was doing something wrong' }
+    )
+  end
+end
+```
 
 ## Support and tickets
 
